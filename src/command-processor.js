@@ -33,6 +33,10 @@ export default class CommandProcessor {
         this._processInfo(msg, socket);
         break;
       }
+      case (CommandProcessor.QUIT): {
+        this._processQuit(msg, socket);
+        break;
+      }
       case (CommandProcessor.SET): {
         this._processSet(msg, socket);
         break;
@@ -71,6 +75,10 @@ export default class CommandProcessor {
         msg.value[0].type == '$' &&
         msg.value[0].value.toUpperCase() == CommandProcessor.INFO) {
       commandType = CommandProcessor.INFO;
+    } else if (msg.type == '*' && msg.length >= 0 &&
+        msg.value[0].type == '$' &&
+        msg.value[0].value.toUpperCase() == CommandProcessor.QUIT) {
+      commandType = CommandProcessor.QUIT;
     } else if (msg.type == '*' && msg.length == 2 &&
                msg.value[0].type == '$' &&
                msg.value[0].value.toUpperCase() == CommandProcessor.GET) {
@@ -158,6 +166,21 @@ export default class CommandProcessor {
       value: infoString
     };
     this._sendMessage(respMsg, socket);
+  }
+
+
+  /**
+   * Process QUIT command.
+   */
+  _processQuit(msg, socket) {
+
+    // 'Close connection' with OK code.
+    let respMsg = {
+      type: '+',
+      value: 'OK'
+    };
+    this._sendMessage(respMsg, socket);
+    socket.destroy();
   }
 
   /**
@@ -289,6 +312,10 @@ export default class CommandProcessor {
 
   static get INFO() {
     return 'INFO';
+  }
+
+  static get QUIT() {
+    return 'QUIT';
   }
 
   static get SELECT() {
