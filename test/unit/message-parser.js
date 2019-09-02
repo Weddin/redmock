@@ -39,22 +39,22 @@ describe('MessageParser', () => {
     });
 
     it('should fail due to invalid length', () => {
-      should.not.exist(messageParser.parse(new Buffer([0x00, 0x00])));
+      should.not.exist(messageParser.parse(Buffer.from([0x00, 0x00])));
     });
 
     it('should fail due to invalid end of message', () => {
-      should.not.exist(messageParser.parse(new Buffer('000')));
-      should.not.exist(messageParser.parse(new Buffer('0\r0')));
-      should.not.exist(messageParser.parse(new Buffer('00\n')));
+      should.not.exist(messageParser.parse(Buffer.from('000')));
+      should.not.exist(messageParser.parse(Buffer.from('0\r0')));
+      should.not.exist(messageParser.parse(Buffer.from('00\n')));
     });
 
     it('should fail due to invalid type', () => {
-      let data = new Buffer('#\r\n');
+      let data = Buffer.from('#\r\n');
       should.not.exist(messageParser.parse(data));
     });
 
     it('should parse error', () => {
-      let data = new Buffer('-ERR\r\n');
+      let data = Buffer.from('-ERR\r\n');
       let msg = messageParser.parse(data);
       should.exist(msg);
       msg.type.should.equal('-');
@@ -62,7 +62,7 @@ describe('MessageParser', () => {
     });
 
     it('should parse simple string', () => {
-      let data = new Buffer('+OK\r\n');
+      let data = Buffer.from('+OK\r\n');
       let msg = messageParser.parse(data);
       should.exist(msg);
       msg.type.should.equal('+');
@@ -70,13 +70,13 @@ describe('MessageParser', () => {
     });
 
     it('should fail to parse bulk string due to invalid length', () => {
-      let data = new Buffer('$20\r\nbulkstring\r\n');
+      let data = Buffer.from('$20\r\nbulkstring\r\n');
       let msg = messageParser.parse(data);
       should.not.exist(msg);
     });
 
     it('should parse bulk string', () => {
-      let data = new Buffer('$10\r\nbulkstring\r\n');
+      let data = Buffer.from('$10\r\nbulkstring\r\n');
       let msg = messageParser.parse(data);
       should.exist(msg);
       msg.type.should.equal('$');
@@ -85,7 +85,7 @@ describe('MessageParser', () => {
     });
 
     it('should parse null bulk string', () => {
-      let data = new Buffer('$-1\r\n');
+      let data = Buffer.from('$-1\r\n');
       let msg = messageParser.parse(data);
       should.exist(msg);
       msg.type.should.equal('$');
@@ -94,13 +94,13 @@ describe('MessageParser', () => {
     });
 
     it('should fail to parse array due to uknown type', () => {
-      let data = new Buffer('*3\r\n$8\r\nsentinel\r\n$23\r\nget-master-addr-by-name\r\n^8\r\nmymaster\r\n');
+      let data = Buffer.from('*3\r\n$8\r\nsentinel\r\n$23\r\nget-master-addr-by-name\r\n^8\r\nmymaster\r\n');
       let msg = messageParser.parse(data);
       should.not.exist(msg);
     });
 
     it('should parse array', () => {
-      let data = new Buffer('*3\r\n$8\r\nsentinel\r\n$23\r\nget-master-addr-by-name\r\n$8\r\nmymaster\r\n');
+      let data = Buffer.from('*3\r\n$8\r\nsentinel\r\n$23\r\nget-master-addr-by-name\r\n$8\r\nmymaster\r\n');
       let msg = messageParser.parse(data);
       should.exist(msg);
       msg.type.should.equal('*');

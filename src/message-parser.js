@@ -53,7 +53,7 @@ module.exports = class MessageParser {
     let commands = data.toString().match(/[^*]+/g);
     let res = [ ];
     for (let command of commands) {
-      res.push(new Buffer('*' + command));
+      res.push(Buffer.from('*' + command));
     }
     return res;
   }
