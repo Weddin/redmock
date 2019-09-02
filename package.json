@@ -7,7 +7,7 @@
   "bugs": "https://github.com/skewedaspect/redmock/issues",
   "main": "index.js",
   "engines": {
-    "node": ">= 5.7.0"
+    "node": ">= 8.10.0"
   },
   "repository": {
     "type": "git",
