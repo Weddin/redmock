@@ -4,7 +4,7 @@
 
 Mock [Redis](http://redis.io) server for [Node](https://nodejs.org) unit tests.
 
-Requires Node version 6.0.0 or higher for the newest language features.
+Requires Node version 8.1.0 or higher for the newest language features.
 
 ## Purpose
 
