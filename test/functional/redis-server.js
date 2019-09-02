@@ -22,7 +22,7 @@ describe('RedisServer', () => {
       });
     });
 
-    it('should connect via sentinel', (done) => {
+    xit('should connect via sentinel', (done) => {
       redisServer = new RedisServer();
       redisServer.start().then((res) => {
         redis = new Redis({

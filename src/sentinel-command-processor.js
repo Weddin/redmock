@@ -85,9 +85,9 @@ module.exports = class SentinelCommandProcessor {
   _getCommandType(msg) {
     let commandType = null;
     // get-master-addr-by-name
-    if (msg.type == '*' && msg.length == 3 &&
-        msg.value[0].type == '$' && msg.value[0].value == 'sentinel' &&
-        msg.value[1].type == '$' && msg.value[1].value == SentinelCommandProcessor.GET_MASTER_ADDR_BY_NAME) {
+    if (msg.type === '*' && msg.length === 3 &&
+        msg.value[0].type === '$' && msg.value[0].value === 'sentinel' &&
+        msg.value[1].type === '$' && msg.value[1].value === SentinelCommandProcessor.GET_MASTER_ADDR_BY_NAME) {
       commandType = SentinelCommandProcessor.GET_MASTER_ADDR_BY_NAME;
     }
 
