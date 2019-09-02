@@ -9,8 +9,7 @@ module.exports = class Database
     {
         error.color = 1;
         this.data = {
-            0: {
-            }
+            0: {}
         };
     }
 
@@ -40,7 +39,7 @@ module.exports = class Database
         }
         else
         {
-            error(`Unkown key ${ key } in ${ db }`);
+            error(`Unknown key ${ key } in ${ db }`);
             return null;
         }
     }

@@ -38,8 +38,24 @@ module.exports = class CommandProcessor
                 this._processSetEx(msg, socket);
                 break;
 
+            case (CommandProcessor.RPUSH):
+                this._processRPush(msg, socket);
+                break;
+
+            case (CommandProcessor.LPUSH):
+                this._processLPush(msg, socket);
+                break;
+
             case (CommandProcessor.GET):
                 this._processGet(msg, socket);
+                break;
+
+            case (CommandProcessor.RPOP):
+                this._processRPop(msg, socket);
+                break;
+
+            case (CommandProcessor.LPOP):
+                this._processLPop(msg, socket);
                 break;
 
             case (CommandProcessor.SELECT):
@@ -90,6 +106,30 @@ module.exports = class CommandProcessor
             && msg.value[0].value.toUpperCase() === CommandProcessor.SETEX)
         {
             commandType = CommandProcessor.SETEX;
+        }
+        else if(msg.type === '*' && msg.length === 3
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.LPUSH)
+        {
+            commandType = CommandProcessor.LPUSH;
+        }
+        else if(msg.type === '*' && msg.length === 3
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.RPUSH)
+        {
+            commandType = CommandProcessor.RPUSH;
+        }
+        else if(msg.type === '*' && msg.length === 2
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.LPOP)
+        {
+            commandType = CommandProcessor.LPOP;
+        }
+        else if(msg.type === '*' && msg.length === 2
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.RPOP)
+        {
+            commandType = CommandProcessor.RPOP;
         }
         else if(msg.type === '*' && msg.length === 2
             && msg.value[0].type === '$'
@@ -202,6 +242,124 @@ module.exports = class CommandProcessor
         }
         else
         {
+            this._sendNullReply(socket);
+        }
+    }
+
+    _processRPush(msg, socket)
+    {
+        const key = msg.value[1].value;
+        const val = msg.value[2].value;
+        debug(`RPUSH ${ key } ${ val }`);
+
+        let value = this.database.get(key, socket.database);
+        if(value)
+        {
+            if(Array.isArray(value.value))
+            {
+                value.value.push(val);
+            }
+            else
+            {
+                //TODO: Technically, we should error if the key is not a list.
+                this._sendNullReply(socket);
+            }
+        }
+        else
+        {
+            value = { value: [ val ] };
+        }
+
+        // Set the value back in the db
+        this.database.set(key, value.value, socket.database);
+
+        const arrLen = `${ value.value.length }`;
+        const respMsg = {
+            type: '$',
+            length: arrLen.length,
+            value: arrLen
+        };
+        this._sendMessage(respMsg, socket);
+    }
+
+    _processLPush(msg, socket)
+    {
+        const key = msg.value[1].value;
+        const val = msg.value[2].value;
+        debug(`LPUSH ${ key } ${ val }`);
+
+        let value = this.database.get(key, socket.database);
+        if(value)
+        {
+            if(Array.isArray(value.value))
+            {
+                value.value.unshift(val);
+            }
+            else
+            {
+                //TODO: Technically, we should error if the key is not a list.
+                this._sendNullReply(socket);
+            }
+        }
+        else
+        {
+            value = { value: [ val ] };
+        }
+
+        // Set the value back in the db
+        this.database.set(key, value.value, socket.database);
+
+        const arrLen = `${ value.value.length }`;
+        const respMsg = {
+            type: '$',
+            length: arrLen.length,
+            value: arrLen
+        };
+        this._sendMessage(respMsg, socket);
+    }
+
+    _processRPop(msg, socket)
+    {
+        const key = msg.value[1].value;
+        debug(`RPOP ${ key }`);
+
+        const value = this.database.get(key, socket.database);
+        if(value && Array.isArray(value.value) && value.value.length > 0)
+        {
+            let val = `${ value.value.pop() }`;
+            const respMsg = {
+                type: '$',
+                length: val.length,
+                value: val
+            };
+            this._sendMessage(respMsg, socket);
+        }
+        else
+        {
+            //TODO: Technically, we should error if the key is not a list.
+            this._sendNullReply(socket);
+        }
+    }
+
+    _processLPop(msg, socket)
+    {
+        const key = msg.value[1].value;
+        debug(`LPOP ${ key }`);
+
+        const value = this.database.get(key, socket.database);
+        if(value && Array.isArray(value.value) && value.value.length > 0)
+        {
+            let val = `${ value.value.shift() }`;
+            const respMsg = {
+                type: '$',
+                length: val.length,
+                value: val
+            };
+            this._sendMessage(respMsg, socket);
+        }
+        else
+        {
+            //TODO: Technically, we should error if the key is not a list.
             this._sendNullReply(socket);
         }
     }
@@ -335,9 +493,39 @@ module.exports = class CommandProcessor
         return 'SETEX';
     }
 
+    static get LPUSH()
+    {
+        return 'LPUSH';
+    }
+
+    static get RPUSH()
+    {
+        return 'RPUSH';
+    }
+
     static get GET()
     {
         return 'GET';
+    }
+
+    static get LPOP()
+    {
+        return 'LPOP';
+    }
+
+    static get RPOP()
+    {
+        return 'RPOP';
+    }
+
+    static get BLPOP()
+    {
+        return 'BLPOP';
+    }
+
+    static get BRPOP()
+    {
+        return 'BRPOP';
     }
 
     static get DEL()
