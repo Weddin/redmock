@@ -1,5 +1,7 @@
 # RedMock
 
+[![Build Status](https://travis-ci.com/SkewedAspect/redmock.svg?branch=master)](https://travis-ci.com/SkewedAspect/redmock)
+
 Mock [Redis](http://redis.io) server for [Node](https://nodejs.org) unit tests.
 
 Requires Node version 6.0.0 or higher for the newest language features.
