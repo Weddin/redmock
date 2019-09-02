@@ -12,9 +12,9 @@ describe('RedisServer', () => {
 
   beforeEach(() => {
     redisServer = new RedisServer();
-    processSentinelCommand = sinon.stub(redisServer.sentinelCommandProcessor, 'process', (msg, socket) => {
+    processSentinelCommand = sinon.stub(redisServer.sentinelCommandProcessor, 'process').callsFake((msg, socket) => {
     });
-    processCommand = sinon.stub(redisServer.commandProcessor, 'process', (msg, socket) => {
+    processCommand = sinon.stub(redisServer.commandProcessor, 'process').callsFake((msg, socket) => {
     });
   });
 
