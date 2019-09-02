@@ -1,2 +1,1 @@
-const RedisServer = require('./src/redis-server');
-module.exports = RedisServer;
+module.exports = require('./src/redis-server');

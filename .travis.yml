@@ -1,10 +1,11 @@
 language: node_js
 node_js:
-- "5.7.0"
-install: npm install
+- node
+- lts
+- 12
+- 8
+- 6
+install: yarn install
 branches:
   only:
   - master
-env:
-  global:
-    secure: Nz3G7vwrCLXqn5a7Tt4n071cDfPOVEsS8dcmO614zoEIKi2KCNMfRKI2kE5gnudLdRbyAhlippCegAwxNIWQhIVoQ+x2xepLewLSksde9xwlKjxKFX6h5DBlVelmKZL9aO/freoZnv3kvg9GOq1rFKDCniLdyDD0eyKOSJhEH5O8mc3S7knrKgZHSUdRajWWbOQE8d5MX9M0DZ4JZedlZ8UCNm6BRIapRZYIbWtq2j6bKur1/JZkZICz2ZAVg0pcCWTA5socBQokqzOXR4uTLYcY+SGNQQt9TUPxEWCrQPuG7ka16H8BaucGS9Wgmojrps9sG2VfpolGZs4az5ZEqn40RQ1nt4JcvGLh5rPnpo0hQv7I0glebLYQSi54EFqiymekPpz6Eh5u4XcsPW+kiwG8ZIyjt/Px6Or+cvk3d1OtMXMKvR6LJaZPILlmkdidXlYKa+YTqkNeS604Bje+ijAh7E1TZKS/cBgAP4bgJDvpl+WY1wZBQHJqMzVPC48/UHJ6rDxF2kIYTVK+HubEbk+rhx+dBLNwNVetgrpfdOcVxmttOLl3wlmBd2atyp1df8ylrLhl9o5vdxKEaCZtePECriNwMZNU+ejWvJ++o6bgeT0wsbaqjVy5qgQvcQCwLpiwhI3bkEdeilRBfGpqTEQABeZX2lAX+Oyz8wn5/8Q=

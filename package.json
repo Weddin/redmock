@@ -1,17 +1,17 @@
 {
-    "name": "redmock",
+    "name": "@skewedaspect/redmock",
     "version": "1.0.2",
     "description": "Mock Redis server for unit testing.",
     "license": "MIT",
-    "author": "Scott Guilbeaux <scott@sguilbeaux.com>",
-    "bugs": "https://github.com/smokerbag/redmock/issues",
+    "author": "Christopher S. Case <chris.case@g33xnexus.com>",
+    "bugs": "https://github.com/skewedaspect/redmock/issues",
     "main": "index.js",
     "engines": {
         "node": ">= 5.7.0"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/smokerbag/redmock.git"
+        "url": "https://github.com/skewedaspect/redmock.git"
     },
     "scripts": {
         "test": "mocha -R spec ./test/common.js ./test/unit/**/*.js ./test/functional/**/*.js"
