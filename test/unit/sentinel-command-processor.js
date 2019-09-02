@@ -1,7 +1,7 @@
 'use strict';
 
-import SentinelCommandProcessor from '../../src/sentinel-command-processor';
-import stream from 'stream';
+const SentinelCommandProcessor = require('../../src/sentinel-command-processor');
+const stream = require('stream');
 
 require('../common');
 

@@ -1,7 +1,7 @@
 'use strict';
 
-import CommandProcessor from '../../src/command-processor';
-import stream from 'stream';
+const CommandProcessor = require('../../src/command-processor');
+const stream = require('stream');
 
 require('../common');
 

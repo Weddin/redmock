@@ -1,5 +1,5 @@
-import Redis from 'ioredis';
-import RedisServer from '../../index';
+const Redis = require('ioredis');
+const RedisServer = require('../../index');
 
 describe('RedisServer', () => {
 

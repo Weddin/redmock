@@ -1,7 +1,7 @@
 'use strict';
 
-import MessageParser from './message-parser';
-import Database from './database';
+const MessageParser = require('./message-parser');
+const Database = require('./database');
 
 const debug = require('debug')('redmock:command-processor');
 const error = require('debug')('redmock:error');
@@ -9,7 +9,7 @@ const error = require('debug')('redmock:error');
 /**
  * Command processor.
  */
-export default class CommandProcessor {
+module.exports = class CommandProcessor {
 
   /**
    * Constructor.

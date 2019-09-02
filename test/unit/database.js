@@ -1,6 +1,6 @@
 'use strict';
 
-import Database from '../../src/database';
+const Database = require('../../src/database');
 
 require('../common');
 

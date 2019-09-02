@@ -1,12 +1,12 @@
 'use strict';
 
 const debug = require('debug')('redmock:database');
-var error = require('debug')('redmock:error');
+const error = require('debug')('redmock:error');
 
 /**
  * Simple database to store values.
  */
-export default class Database {
+module.exports = class Database {
 
   /**
    * Constructor.

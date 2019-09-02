@@ -1,9 +1,9 @@
 'use strict';
 
-import net from 'net';
-import MessageParser from './message-parser';
-import CommandProcessor from './command-processor';
-import SentinelCommandProcessor from './sentinel-command-processor';
+const net = require('net');
+const MessageParser = require('./message-parser');
+const CommandProcessor = require('./command-processor');
+const SentinelCommandProcessor = require('./sentinel-command-processor');
 
 const debug = require('debug')('redmock:redis-server');
 
@@ -15,7 +15,7 @@ const defaultOpts = {
 /**
  * Implement a mock Redis server for unit testing.
  */
-export default class RedisServer {
+module.exports = class RedisServer {
 
   /**
    * Constructor.
@@ -49,7 +49,7 @@ export default class RedisServer {
 
       // We are listening
       this.server.once('listening', () => {
-        this.server.removeAllListeners('error');
+          this.server.removeAllListeners('error');
 
         // Now let's start a sentinel server
         this.sentinelServer = net.createServer(this.handleSentinelConnection.bind(this));

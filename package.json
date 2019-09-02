@@ -14,7 +14,7 @@
         "url": "https://github.com/smokerbag/redmock.git"
     },
     "scripts": {
-        "test": "gulp travisTest",
+        "test": "mocha -R spec ./test/common.js ./test/unit/**/*.js ./test/functional/**/*.js",
         "build": "gulp build"
     },
     "dependencies": {

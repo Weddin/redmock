@@ -3,7 +3,7 @@
 /**
  * Message parser.
  */
-export default class MessageParser {
+module.exports = class MessageParser {
 
   /**
    * Constructor.

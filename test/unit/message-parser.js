@@ -1,6 +1,6 @@
 'use strict';
 
-import MessageParser from '../../src/message-parser.js';
+const MessageParser = require('../../src/message-parser.js');
 
 require('../common');
 

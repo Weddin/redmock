@@ -1,13 +1,13 @@
 'use strict';
 
-import MessageParser from './message-parser';
+const MessageParser = require('./message-parser');
 
 const debug = require('debug')('redmock:sentinel-command-parser');
 
 /**
  * Process sentinel commands.
  */
-export default class SentinelCommandProcessor {
+module.exports = class SentinelCommandProcessor {
 
   /**
    * Constructor.
