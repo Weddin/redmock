@@ -1,43 +1,33 @@
 {
-    "name": "redmock",
-    "version": "1.0.2",
-    "description": "Mock Redis server for unit testing.",
-    "license": "MIT",
-    "author": "Scott Guilbeaux <scott@sguilbeaux.com>",
-    "bugs": "https://github.com/smokerbag/redmock/issues",
-    "main": "index.js",
-    "engines": {
-        "node": ">= 5.7.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/smokerbag/redmock.git"
-    },
-    "scripts": {
-        "test": "gulp travisTest",
-        "build": "gulp build"
-    },
-    "dependencies": {
-        "debug": "2.2.0"
-    },
-    "devDependencies": {
-        "babel-core": "6.5.2",
-        "babel-preset-es2016-node5": "1.1.2",
-        "chai": "3.5.0",
-        "chai-as-promised": "5.2.0",
-        "gulp": "3.9.1",
-        "gulp-babel": "6.1.2",
-        "gulp-coveralls": "0.1.4",
-        "gulp-istanbul": "0.10.3",
-        "gulp-jscs": "3.0.2",
-        "gulp-jscs-stylish": "1.3.0",
-        "gulp-jshint": "2.0.0",
-        "gulp-mocha": "2.2.0",
-        "ioredis": "1.15.1",
-        "isparta": "4.0.0",
-        "jshint": "2.9.1",
-        "jshint-stylish": "2.1.0",
-        "rimraf": "2.5.2",
-        "sinon": "1.17.3"
-    }
+  "name": "@skewedaspect/redmock",
+  "version": "1.0.2",
+  "description": "Mock Redis server for unit testing.",
+  "license": "MIT",
+  "author": "Christopher S. Case <chris.case@g33xnexus.com>",
+  "bugs": "https://github.com/skewedaspect/redmock/issues",
+  "main": "index.js",
+  "engines": {
+    "node": ">= 5.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skewedaspect/redmock.git"
+  },
+  "scripts": {
+    "ci": "npm run lint && npm run test",
+    "lint": "eslint --fix index.js src/*.js",
+    "test": "mocha -R spec ./test/common.js ./test/unit/**/*.js ./test/functional/**/*.js"
+  },
+  "dependencies": {
+    "debug": "4.1.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^6.3.0",
+    "ioredis": "4.14.0",
+    "mocha": "^6.2.0",
+    "rimraf": "^3.0.0",
+    "sinon": "7.4.2"
+  }
 }

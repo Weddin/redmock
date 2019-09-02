@@ -1,7 +1,2 @@
-src
 test
-gulpfile.babel.js
-coverage
 .travis.yml
-.jscsrc
-.babelrc
