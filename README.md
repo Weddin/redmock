@@ -16,6 +16,16 @@ This project has been forked to update dependencies and try to bring the code ba
 
 ## Usage
 
+**npm**
+```bash
+$ npm install -D @skewedaspect/redmock
+```
+
+**yarn**
+```bash
+$ yarn add -D @skewedaspect/redmock
+```
+
 ### Starting the server
 
 Call the start method after creating a new instance of the RedisServer class. This method returns an ES6 promise.
