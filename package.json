@@ -1,30 +1,33 @@
 {
-    "name": "@skewedaspect/redmock",
-    "version": "1.0.2",
-    "description": "Mock Redis server for unit testing.",
-    "license": "MIT",
-    "author": "Christopher S. Case <chris.case@g33xnexus.com>",
-    "bugs": "https://github.com/skewedaspect/redmock/issues",
-    "main": "index.js",
-    "engines": {
-        "node": ">= 5.7.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/skewedaspect/redmock.git"
-    },
-    "scripts": {
-        "test": "mocha -R spec ./test/common.js ./test/unit/**/*.js ./test/functional/**/*.js"
-    },
-    "dependencies": {
-        "debug": "4.1.1"
-    },
-    "devDependencies": {
-        "chai": "^4.2.0",
-        "chai-as-promised": "^7.1.1",
-        "ioredis": "4.14.0",
-        "mocha": "^6.2.0",
-        "rimraf": "^3.0.0",
-        "sinon": "7.4.2"
-    }
+  "name": "@skewedaspect/redmock",
+  "version": "1.0.2",
+  "description": "Mock Redis server for unit testing.",
+  "license": "MIT",
+  "author": "Christopher S. Case <chris.case@g33xnexus.com>",
+  "bugs": "https://github.com/skewedaspect/redmock/issues",
+  "main": "index.js",
+  "engines": {
+    "node": ">= 5.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skewedaspect/redmock.git"
+  },
+  "scripts": {
+    "ci": "npm run lint && npm run test",
+    "lint": "eslint --fix index.js src/*.js",
+    "test": "mocha -R spec ./test/common.js ./test/unit/**/*.js ./test/functional/**/*.js"
+  },
+  "dependencies": {
+    "debug": "4.1.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^6.3.0",
+    "ioredis": "4.14.0",
+    "mocha": "^6.2.0",
+    "rimraf": "^3.0.0",
+    "sinon": "7.4.2"
+  }
 }
