@@ -486,10 +486,20 @@ module.exports = class CommandProcessor extends EventEmitter
 
     _processBRPop(msg, socket)
     {
+        if(msg.value.length === 2)
+        {
+            msg.value.push({ type: '$', length: 1, value: '0' })
+        }
+
         // The last element is always the timeout
-        const timeout = parseInt(msg.value.pop().value);
+        let timeout = parseInt(msg.value.pop().value);
         const keys = msg.value.slice(1).map((val) => val.value);
         const delayed = [];
+
+        if(isNaN(timeout))
+        {
+            timeout = 0;
+        }
 
         if(keys.length === 0 || isNaN(timeout))
         {
@@ -541,12 +551,22 @@ module.exports = class CommandProcessor extends EventEmitter
 
     _processBLPop(msg, socket)
     {
+        if(msg.value.length === 2)
+        {
+            msg.value.push({ type: '$', length: 1, value: '0' })
+        }
+
         // The last element is always the timeout
-        const timeout = parseInt(msg.value.pop().value);
+        let timeout = parseInt(msg.value.pop().value);
         const keys = msg.value.slice(1).map((val) => val.value);
         const delayed = [];
 
-        if(keys.length === 0 || isNaN(timeout))
+        if(isNaN(timeout))
+        {
+            timeout = 0;
+        }
+
+        if(keys.length === 0)
         {
             this._sendError('wrong number of arguments for \'blpop\' command', socket);
         }

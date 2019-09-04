@@ -642,7 +642,7 @@ describe('CommandProcessor', () =>
                     },
                     {
                         type: '$',
-                        length: 2,
+                        length: 1,
                         value: '1'
                     }
                 ]
@@ -901,7 +901,7 @@ describe('CommandProcessor', () =>
                     },
                     {
                         type: '$',
-                        length: 2,
+                        length: 1,
                         value: '1'
                     }
                 ]
