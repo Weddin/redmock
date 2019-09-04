@@ -298,7 +298,7 @@ module.exports = class CommandProcessor extends EventEmitter
             }
             else
             {
-                //TODO: Technically, we should error if the key is not a list.
+                // TODO: Technically, we should error if the key is not a list.
                 this._sendNullReply(socket);
             }
         }
@@ -337,7 +337,7 @@ module.exports = class CommandProcessor extends EventEmitter
             }
             else
             {
-                //TODO: Technically, we should error if the key is not a list.
+                // TODO: Technically, we should error if the key is not a list.
                 this._sendNullReply(socket);
             }
         }
@@ -369,7 +369,7 @@ module.exports = class CommandProcessor extends EventEmitter
         const value = this.database.get(key, socket.database);
         if(value && Array.isArray(value.value) && value.value.length > 0)
         {
-            let val = `${ value.value.pop() }`;
+            const val = `${ value.value.pop() }`;
             let respMsg = {
                 type: '$',
                 length: val.length,
@@ -389,14 +389,14 @@ module.exports = class CommandProcessor extends EventEmitter
                         },
                         respMsg
                     ]
-                }
+                };
             }
 
             this._sendMessage(respMsg, socket);
         }
         else
         {
-            //TODO: Technically, we should error if the key is not a list.
+            // TODO: Technically, we should error if the key is not a list.
             this._sendNullReply(socket);
         }
     }
@@ -409,7 +409,7 @@ module.exports = class CommandProcessor extends EventEmitter
         const value = this.database.get(key, socket.database);
         if(value && Array.isArray(value.value) && value.value.length > 0)
         {
-            let val = `${ value.value.shift() }`;
+            const val = `${ value.value.shift() }`;
             let respMsg = {
                 type: '$',
                 length: val.length,
@@ -429,27 +429,29 @@ module.exports = class CommandProcessor extends EventEmitter
                         },
                         respMsg
                     ]
-                }
+                };
             }
 
             this._sendMessage(respMsg, socket);
         }
         else
         {
-            //TODO: Technically, we should error if the key is not a list.
+            // TODO: Technically, we should error if the key is not a list.
             this._sendNullReply(socket);
         }
     }
 
     _blockOnKey(key, timeout, socket, popFunc, cleanup)
     {
+        let handle;
         if(typeof timeout === 'number' && timeout > 0)
         {
             // Handle the timeout property
-            const handle = setTimeout(() =>
+            handle = setTimeout(() =>
             {
                 cleanup();
                 socket.blocking = false;
+                // eslint-disable-next-line no-use-before-define
                 this.removeListener(`push:${ key }`, delayedPop);
                 this._sendNullReply(socket);
                 this._processBlockedQueue(socket);
@@ -495,14 +497,14 @@ module.exports = class CommandProcessor extends EventEmitter
         }
         else
         {
-            for (let key of keys)
+            for(const key of keys)
             {
                 const innerMsg = {
                     type: '*',
                     length: 3,
                     value: [
                         { type: '$', length: 5, value: 'rpop' },
-                        { type: '$', length: 3, value: key },
+                        { type: '$', length: 3, value: key }
                     ]
                 };
 
@@ -518,15 +520,17 @@ module.exports = class CommandProcessor extends EventEmitter
                     // In this case, we've gotta wait, and do some cleanup because once any of them resolves, we cancel the
                     // others. Turns out, that's a little complicated. Also, there's a timeout to handle.
                     socket.blocking = true;
-                    const delayFunc = this._blockOnKey(key, timeout, socket,
+                    const delayFunc = this._blockOnKey(
+                        key, timeout, socket,
                         () =>
                         {
-                            this._processRPop(innerMsg, socket, true)
+                            this._processRPop(innerMsg, socket, true);
                         },
                         () =>
                         {
                             delayed.forEach(({ key, delayFunc }) => this.removeAllListeners(`push:${ key }`, delayFunc));
-                        });
+                        }
+                    );
 
                     // Store for cleanup; since once any key pops, we cancel all other requests
                     delayed.push({ key, delayFunc });
@@ -548,14 +552,14 @@ module.exports = class CommandProcessor extends EventEmitter
         }
         else
         {
-            for (let key of keys)
+            for(const key of keys)
             {
                 const innerMsg = {
                     type: '*',
                     length: 3,
                     value: [
                         { type: '$', length: 5, value: 'lpop' },
-                        { type: '$', length: 3, value: key },
+                        { type: '$', length: 3, value: key }
                     ]
                 };
 
@@ -571,15 +575,17 @@ module.exports = class CommandProcessor extends EventEmitter
                     // In this case, we've gotta wait, and do some cleanup because once any of them resolves, we cancel the
                     // others. Turns out, that's a little complicated. Also, there's a timeout to handle.
                     socket.blocking = true;
-                    const delayFunc = this._blockOnKey(key, timeout, socket,
+                    const delayFunc = this._blockOnKey(
+                        key, timeout, socket,
                         () =>
                         {
-                            this._processLPop(innerMsg, socket, true)
+                            this._processLPop(innerMsg, socket, true);
                         },
                         () =>
                         {
                             delayed.forEach(({ key, delayFunc }) => this.removeAllListeners(`push:${ key }`, delayFunc));
-                        });
+                        }
+                    );
 
                     // Store for cleanup; since once any key pops, we cancel all other requests
                     delayed.push({ key, delayFunc });
