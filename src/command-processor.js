@@ -1,18 +1,22 @@
 'use strict';
 
+const { EventEmitter } = require('events');
 const MessageParser = require('./message-parser');
 const Database = require('./database');
 
 const debug = require('debug')('redmock:command-processor');
 const error = require('debug')('redmock:error');
 
-module.exports = class CommandProcessor
+module.exports = class CommandProcessor extends EventEmitter
 {
     constructor()
     {
+        super();
+
         error.color = 1;
         this.messageParser = new MessageParser();
         this.database = new Database();
+        this.blockedQueue = [];
     }
 
     process(msg, socket)
@@ -56,6 +60,14 @@ module.exports = class CommandProcessor
 
             case (CommandProcessor.LPOP):
                 this._processLPop(msg, socket);
+                break;
+
+            case (CommandProcessor.BRPOP):
+                this._processBRPop(msg, socket);
+                break;
+
+            case (CommandProcessor.BLPOP):
+                this._processBLPop(msg, socket);
                 break;
 
             case (CommandProcessor.SELECT):
@@ -131,6 +143,18 @@ module.exports = class CommandProcessor
         {
             commandType = CommandProcessor.RPOP;
         }
+        else if(msg.type === '*' && msg.length >= 2
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.BLPOP)
+        {
+            commandType = CommandProcessor.BLPOP;
+        }
+        else if(msg.type === '*' && msg.length >= 2
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.BRPOP)
+        {
+            commandType = CommandProcessor.BRPOP;
+        }
         else if(msg.type === '*' && msg.length === 2
             && msg.value[0].type === '$'
             && msg.value[0].value.toUpperCase() === CommandProcessor.SELECT)
@@ -147,11 +171,24 @@ module.exports = class CommandProcessor
         return commandType;
     }
 
+    _processBlockedQueue(socket)
+    {
+        const messages = this.blockedQueue.filter((obj) => obj[1] === socket);
+        messages.forEach((obj) => this._sendMessage(obj[0], obj[1]));
+    }
+
     _sendMessage(msg, socket)
     {
-        const respString = this.messageParser.toString(msg);
-        debug(`Send response of\n${ respString }\nto ${ socket.remoteAddress }:${ socket.remotePort }`);
-        socket.write(respString);
+        if(socket.blocking)
+        {
+            this.blockedQueue.push([ msg, socket ]);
+        }
+        else
+        {
+            const respString = this.messageParser.toString(msg);
+            debug(`Send response of\n${ respString }\nto ${ socket.remoteAddress }:${ socket.remotePort }`);
+            socket.write(respString);
+        } // end if
     }
 
     _sendError(errMsg, socket)
@@ -273,6 +310,9 @@ module.exports = class CommandProcessor
         // Set the value back in the db
         this.database.set(key, value.value, socket.database);
 
+        // Emit, for blocking support
+        this.emit(`push:${ key }`, value.value);
+
         const arrLen = `${ value.value.length }`;
         const respMsg = {
             type: '$',
@@ -309,6 +349,9 @@ module.exports = class CommandProcessor
         // Set the value back in the db
         this.database.set(key, value.value, socket.database);
 
+        // Emit, for blocking support
+        this.emit(`push:${ key }`, value.value);
+
         const arrLen = `${ value.value.length }`;
         const respMsg = {
             type: '$',
@@ -318,7 +361,7 @@ module.exports = class CommandProcessor
         this._sendMessage(respMsg, socket);
     }
 
-    _processRPop(msg, socket)
+    _processRPop(msg, socket, includeKey)
     {
         const key = msg.value[1].value;
         debug(`RPOP ${ key }`);
@@ -327,11 +370,28 @@ module.exports = class CommandProcessor
         if(value && Array.isArray(value.value) && value.value.length > 0)
         {
             let val = `${ value.value.pop() }`;
-            const respMsg = {
+            let respMsg = {
                 type: '$',
                 length: val.length,
                 value: val
             };
+
+            if(includeKey)
+            {
+                respMsg = {
+                    type: '*',
+                    length: 2,
+                    value: [
+                        {
+                            type: '$',
+                            length: key.length,
+                            value: key
+                        },
+                        respMsg
+                    ]
+                }
+            }
+
             this._sendMessage(respMsg, socket);
         }
         else
@@ -341,7 +401,7 @@ module.exports = class CommandProcessor
         }
     }
 
-    _processLPop(msg, socket)
+    _processLPop(msg, socket, includeKey)
     {
         const key = msg.value[1].value;
         debug(`LPOP ${ key }`);
@@ -350,17 +410,181 @@ module.exports = class CommandProcessor
         if(value && Array.isArray(value.value) && value.value.length > 0)
         {
             let val = `${ value.value.shift() }`;
-            const respMsg = {
+            let respMsg = {
                 type: '$',
                 length: val.length,
                 value: val
             };
+
+            if(includeKey)
+            {
+                respMsg = {
+                    type: '*',
+                    length: 2,
+                    value: [
+                        {
+                            type: '$',
+                            length: key.length,
+                            value: key
+                        },
+                        respMsg
+                    ]
+                }
+            }
+
             this._sendMessage(respMsg, socket);
         }
         else
         {
             //TODO: Technically, we should error if the key is not a list.
             this._sendNullReply(socket);
+        }
+    }
+
+    _blockOnKey(key, timeout, socket, popFunc, cleanup)
+    {
+        if(typeof timeout === 'number' && timeout > 0)
+        {
+            // Handle the timeout property
+            const handle = setTimeout(() =>
+            {
+                cleanup();
+                socket.blocking = false;
+                this.removeListener(`push:${ key }`, delayedPop);
+                this._sendNullReply(socket);
+                this._processBlockedQueue(socket);
+            }, timeout);
+        }
+
+        // Once the event fires, we can process everything.
+        const delayedPop = () =>
+        {
+            if(typeof timeout === 'number' && timeout > 0)
+            {
+                clearTimeout(handle);
+            }
+
+            // Stop blocking
+            socket.blocking = false;
+
+            // Do pop, and clean up
+            popFunc();
+            cleanup();
+
+            // Process any other messages we queue up.
+            this._processBlockedQueue(socket);
+        };
+
+        // Listen once per call
+        this.once(`push:${ key }`, delayedPop);
+
+        // Return the function so that we can collect them for cleanup layer.
+        return delayedPop;
+    }
+
+    _processBRPop(msg, socket)
+    {
+        // The last element is always the timeout
+        const timeout = parseInt(msg.value.pop().value);
+        const keys = msg.value.slice(1).map((val) => val.value);
+        const delayed = [];
+
+        if(keys.length === 0 || isNaN(timeout))
+        {
+            this._sendError('wrong number of arguments for \'brpop\' command', socket);
+        }
+        else
+        {
+            for (let key of keys)
+            {
+                const innerMsg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        { type: '$', length: 5, value: 'rpop' },
+                        { type: '$', length: 3, value: key },
+                    ]
+                };
+
+                const value = this.database.get(key, socket.database);
+                if(value && Array.isArray(value.value) && value.value.length > 0)
+                {
+                    // The easy case is we've got a key waiting. We just treat it like a pop.
+                    this._processRPop(innerMsg, socket, true);
+                    break;
+                }
+                else
+                {
+                    // In this case, we've gotta wait, and do some cleanup because once any of them resolves, we cancel the
+                    // others. Turns out, that's a little complicated. Also, there's a timeout to handle.
+                    socket.blocking = true;
+                    const delayFunc = this._blockOnKey(key, timeout, socket,
+                        () =>
+                        {
+                            this._processRPop(innerMsg, socket, true)
+                        },
+                        () =>
+                        {
+                            delayed.forEach(({ key, delayFunc }) => this.removeAllListeners(`push:${ key }`, delayFunc));
+                        });
+
+                    // Store for cleanup; since once any key pops, we cancel all other requests
+                    delayed.push({ key, delayFunc });
+                }
+            }
+        }
+    }
+
+    _processBLPop(msg, socket)
+    {
+        // The last element is always the timeout
+        const timeout = parseInt(msg.value.pop().value);
+        const keys = msg.value.slice(1).map((val) => val.value);
+        const delayed = [];
+
+        if(keys.length === 0 || isNaN(timeout))
+        {
+            this._sendError('wrong number of arguments for \'blpop\' command', socket);
+        }
+        else
+        {
+            for (let key of keys)
+            {
+                const innerMsg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        { type: '$', length: 5, value: 'lpop' },
+                        { type: '$', length: 3, value: key },
+                    ]
+                };
+
+                const value = this.database.get(key, socket.database);
+                if(value && Array.isArray(value.value) && value.value.length > 0)
+                {
+                    // The easy case is we've got a key waiting. We just treat it like a pop.
+                    this._processLPop(innerMsg, socket, true);
+                    break;
+                }
+                else
+                {
+                    // In this case, we've gotta wait, and do some cleanup because once any of them resolves, we cancel the
+                    // others. Turns out, that's a little complicated. Also, there's a timeout to handle.
+                    socket.blocking = true;
+                    const delayFunc = this._blockOnKey(key, timeout, socket,
+                        () =>
+                        {
+                            this._processLPop(innerMsg, socket, true)
+                        },
+                        () =>
+                        {
+                            delayed.forEach(({ key, delayFunc }) => this.removeAllListeners(`push:${ key }`, delayFunc));
+                        });
+
+                    // Store for cleanup; since once any key pops, we cancel all other requests
+                    delayed.push({ key, delayFunc });
+                }
+            }
         }
     }
 

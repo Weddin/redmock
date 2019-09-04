@@ -459,6 +459,204 @@ describe('CommandProcessor', () =>
             commandProcessor.process(msg, socket);
         });
 
+        it('should process brpop like rpop if there is data', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 3,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'brpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            commandProcessor.database.data[ '0' ].foo = {
+                value: [ 'baz', 'bar' ],
+                ttl: 86400,
+                created: new Date()
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+        });
+
+        it('should process brpop, blocking until data is available', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 3,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'brpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+
+            setTimeout(() =>
+            {
+                let msg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        {
+                            type: '$',
+                            length: 5,
+                            value: 'rpush'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'foo'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'bar'
+                        }
+                    ]
+                };
+                let socket1 = stream.PassThrough();
+                socket1.database = '0';
+                commandProcessor.process(msg, socket1);
+            }, 10)
+        });
+
+        it('should process brpop, allowing multiple queues', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 4,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'brpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'bar'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+
+            setTimeout(() =>
+            {
+                let msg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        {
+                            type: '$',
+                            length: 5,
+                            value: 'lpush'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'foo'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'bar'
+                        }
+                    ]
+                };
+                let socket1 = stream.PassThrough();
+                socket1.database = '0';
+                commandProcessor.process(msg, socket1);
+            }, 10)
+        });
+
+        it('should fail to process brpop, blocking until the timeout', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 3,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'brpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 2,
+                        value: '10'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('$-1\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+        });
+
         it('should process lpop', (done) =>
         {
             let msg = {
@@ -520,6 +718,203 @@ describe('CommandProcessor', () =>
             commandProcessor.process(msg, socket);
         });
 
+        it('should process blpop like lpop if there is data', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 2,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'blpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            commandProcessor.database.data[ '0' ].foo = {
+                value: [ 'bar', 'baz' ],
+                ttl: 86400,
+                created: new Date()
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+        });
+
+        it('should process blpop, blocking until data is available', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 3,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'blpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+
+            setTimeout(() =>
+            {
+                let msg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        {
+                            type: '$',
+                            length: 5,
+                            value: 'lpush'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'foo'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'bar'
+                        }
+                    ]
+                };
+                let socket1 = stream.PassThrough();
+                socket1.database = '0';
+                commandProcessor.process(msg, socket1);
+            }, 10)
+        });
+
+        it('should process blpop, allowing multiple queues', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 4,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'blpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'bar'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 1,
+                        value: '0'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+
+            setTimeout(() =>
+            {
+                let msg = {
+                    type: '*',
+                    length: 3,
+                    value: [
+                        {
+                            type: '$',
+                            length: 5,
+                            value: 'lpush'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'foo'
+                        },
+                        {
+                            type: '$',
+                            length: 3,
+                            value: 'bar'
+                        }
+                    ]
+                };
+                let socket1 = stream.PassThrough();
+                socket1.database = '0';
+                commandProcessor.process(msg, socket1);
+            }, 10)
+        });
+
+        it('should fail to process blpop, blocking until the timeout', (done) =>
+        {
+            let msg = {
+                type: '*',
+                length: 3,
+                value: [
+                    {
+                        type: '$',
+                        length: 5,
+                        value: 'blpop'
+                    },
+                    {
+                        type: '$',
+                        length: 3,
+                        value: 'foo'
+                    },
+                    {
+                        type: '$',
+                        length: 2,
+                        value: '10'
+                    }
+                ]
+            };
+            let socket = stream.PassThrough();
+            socket.database = '0';
+            socket.on('data', (data) =>
+            {
+                data.toString().should.equal('$-1\r\n');
+                done();
+            });
+            commandProcessor.process(msg, socket);
+        });
     });
 
 });
