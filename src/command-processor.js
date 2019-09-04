@@ -455,7 +455,7 @@ module.exports = class CommandProcessor extends EventEmitter
                 this.removeListener(`push:${ key }`, delayedPop);
                 this._sendNullReply(socket);
                 this._processBlockedQueue(socket);
-            }, timeout);
+            }, timeout * 1000);
         }
 
         // Once the event fires, we can process everything.
