@@ -42,6 +42,10 @@ module.exports = class CommandProcessor extends EventEmitter
                 this._processSetEx(msg, socket);
                 break;
 
+            case (CommandProcessor.SETNX):
+                this._processSetNx(msg, socket);
+                break;
+
             case (CommandProcessor.RPUSH):
                 this._processRPush(msg, socket);
                 break;
@@ -116,6 +120,12 @@ module.exports = class CommandProcessor extends EventEmitter
         else if(msg.type === '*' && msg.length >= 4
             && msg.value[0].type === '$'
             && msg.value[0].value.toUpperCase() === CommandProcessor.SETEX)
+        {
+            commandType = CommandProcessor.SETEX;
+        }
+        else if(msg.type === '*' && msg.length >= 4
+            && msg.value[0].type === '$'
+            && msg.value[0].value.toUpperCase() === CommandProcessor.SETNX)
         {
             commandType = CommandProcessor.SETEX;
         }
@@ -698,6 +708,30 @@ module.exports = class CommandProcessor extends EventEmitter
         this._processSet(command, socket);
     }
 
+    _processSetEx(msg, socket)
+    {
+        debug('Transform SETEX into SET command');
+        const command = {
+            type: '*',
+            length: 4,
+            value: [
+                {
+                    type: '$',
+                    value: 'set',
+                    length: 3
+                },
+                msg.value[1],
+                msg.value[2],
+                {
+                    type: '$',
+                    value: 'NX',
+                    length: 2
+                }
+            ]
+        };
+        this._processSet(command, socket);
+    }
+
     _processDel(msg, socket)
     {
         let deleted = 0;
@@ -741,6 +775,12 @@ module.exports = class CommandProcessor extends EventEmitter
     static get SETEX()
     {
         return 'SETEX';
+    }
+
+
+    static get SETNX()
+    {
+        return 'SETNX';
     }
 
     static get LPUSH()
