@@ -708,9 +708,9 @@ module.exports = class CommandProcessor extends EventEmitter
         this._processSet(command, socket);
     }
 
-    _processSetEx(msg, socket)
+    _processSetNx(msg, socket)
     {
-        debug('Transform SETEX into SET command');
+        debug('Transform SETNX into SET command');
         const command = {
             type: '*',
             length: 4,
